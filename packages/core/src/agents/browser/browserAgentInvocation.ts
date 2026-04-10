@@ -35,6 +35,7 @@ import {
 } from '../types.js';
 import type { MessageBus } from '../../confirmation-bus/message-bus.js';
 import { createBrowserAgentDefinition } from './browserAgentFactory.js';
+import { BROWSER_AGENT_NAME } from './browserAgentDefinition.js';
 import { removeInputBlocker } from './inputBlocker.js';
 import { logBrowserAgentTaskOutcome } from '../../telemetry/loggers.js';
 import {
@@ -59,8 +60,6 @@ export class BrowserAgentInvocation extends BaseToolInvocation<
   AgentInputs,
   ToolResult
 > {
-  private readonly agentName: string;
-
   constructor(
     private readonly context: AgentLoopContext,
     params: AgentInputs,
@@ -68,15 +67,15 @@ export class BrowserAgentInvocation extends BaseToolInvocation<
     _toolName?: string,
     _toolDisplayName?: string,
   ) {
-    const resolvedName = _toolName ?? 'browser_agent';
-    // Note: BrowserAgentDefinition is a factory function, so we use hardcoded names
+    // Note: BrowserAgentDefinition is a factory function, so we use hardcoded names.
+    // We ignore _toolName (often 'invoke_agent') to ensure we report the canonical
+    // 'browser_agent' name expected by integration tests and for consistency.
     super(
       params,
       messageBus,
-      resolvedName,
+      BROWSER_AGENT_NAME,
       _toolDisplayName ?? 'Browser Agent',
     );
-    this.agentName = resolvedName;
   }
 
   private get config(): Config {
@@ -121,7 +120,7 @@ export class BrowserAgentInvocation extends BaseToolInvocation<
         // Send initial state
         const initialProgress: SubagentProgress = {
           isSubagentProgress: true,
-          agentName: this.agentName,
+          agentName: BROWSER_AGENT_NAME,
           recentActivity: [],
           state: 'running',
         };
@@ -144,7 +143,7 @@ export class BrowserAgentInvocation extends BaseToolInvocation<
             }
             updateOutput({
               isSubagentProgress: true,
-              agentName: this.agentName,
+              agentName: BROWSER_AGENT_NAME,
               recentActivity: [...recentActivity],
               state: 'running',
             } as SubagentProgress);
@@ -291,7 +290,7 @@ export class BrowserAgentInvocation extends BaseToolInvocation<
 
           const progress: SubagentProgress = {
             isSubagentProgress: true,
-            agentName: this.agentName,
+            agentName: BROWSER_AGENT_NAME,
             recentActivity: [...recentActivity],
             state: 'running',
           };
@@ -341,7 +340,7 @@ ${output.result}`;
 
       const progress: SubagentProgress = {
         isSubagentProgress: true,
-        agentName: this.agentName,
+        agentName: BROWSER_AGENT_NAME,
         recentActivity: [...recentActivity],
         state: progressState,
         result: output.result,
@@ -373,7 +372,7 @@ ${output.result}`;
 
       const progress: SubagentProgress = {
         isSubagentProgress: true,
-        agentName: this.agentName,
+        agentName: BROWSER_AGENT_NAME,
         recentActivity: [...recentActivity],
         state: isAbort ? 'cancelled' : 'error',
       };
